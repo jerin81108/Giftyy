@@ -1,0 +1,100 @@
+{
+  "info": {
+    "name": "Dream Wishlist API Collection",
+    "description": "Production API requests for Dream Wishlist Wedding Contribution App",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/health"
+      }
+    },
+    {
+      "name": "2. Public Guest Wishlist (/w/aisha-kabir)",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/weddings/public/aisha-kabir"
+      }
+    },
+    {
+      "name": "3. Share Links & QR Data",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/weddings/share/aisha-kabir"
+      }
+    },
+    {
+      "name": "4. Download Printable Invitation PDF",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/weddings/invite-pdf/aisha-kabir"
+      }
+    },
+    {
+      "name": "5. Send Couple Login OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"9876543210\"\n}"
+        },
+        "url": "http://localhost:5000/api/auth/send-otp"
+      }
+    },
+    {
+      "name": "6. Verify OTP & Get Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"9876543210\",\n  \"otp\": \"123456\",\n  \"name\": \"Aisha & Kabir\"\n}"
+        },
+        "url": "http://localhost:5000/api/auth/verify-otp"
+      }
+    },
+    {
+      "name": "7. Create Guest Razorpay Contribution Order",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"weddingId\": \"<WEDDING_ID>\",\n  \"amount\": 2000,\n  \"guestName\": \"Rahul & Priya\",\n  \"message\": \"Have the best trip to Switzerland! ❤️\",\n  \"isAnonymous\": false\n}"
+        },
+        "url": "http://localhost:5000/api/payments/create-order"
+      }
+    },
+    {
+      "name": "8. Verify Payment Signature",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"order_mock_123\",\n  \"paymentId\": \"pay_mock_123\",\n  \"signature\": \"verified\"\n}"
+        },
+        "url": "http://localhost:5000/api/payments/verify"
+      }
+    },
+    {
+      "name": "9. Simulate Razorpay Webhook",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-razorpay-signature", "value": "mock_sig" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": \"payment.captured\",\n  \"payload\": {\n    \"payment\": {\n      \"entity\": {\n        \"id\": \"pay_test_wh_1\",\n        \"order_id\": \"order_mock_123\",\n        \"amount\": 200000,\n        \"currency\": \"INR\"\n      }\n    }\n  },\n  \"mock\": true\n}"
+        },
+        "url": "http://localhost:5000/api/payments/webhook"
+      }
+    }
+  ]
+}

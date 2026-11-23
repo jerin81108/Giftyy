@@ -1,0 +1,538 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Giftyy API",
+    "version": "1.0.0",
+    "description": "Skip the gifts. Fund the dream – Production-ready backend API with KYC verification and DPDP Act compliance"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/auth/send-otp": {
+      "post": {
+        "summary": "Send Phone OTP (Rate-limited, lockout protected)",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["phone"],
+                "properties": {
+                  "phone": { "type": "string", "example": "9876543210" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OTP sent successfully" }
+        }
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "summary": "Verify OTP & Issue JWT (Couple Host or Guest)",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["phone", "otp"],
+                "properties": {
+                  "phone": { "type": "string", "example": "9876543210" },
+                  "otp": { "type": "string", "example": "123456" },
+                  "name": { "type": "string", "example": "Aisha Sharma" },
+                  "email": { "type": "string", "example": "aisha@example.com" },
+                  "dob": { "type": "string", "example": "1996-08-14" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Logged in successfully with KYC status" }
+        }
+      }
+    },
+    "/auth/firebase-login": {
+      "post": {
+        "summary": "Firebase Phone Auth / ID Token Login & User Auto-Provisioning",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["idToken"],
+                "properties": {
+                  "idToken": { "type": "string", "description": "Firebase user ID token from client SDK" },
+                  "name": { "type": "string", "example": "Aisha Sharma" },
+                  "fcmToken": { "type": "string", "description": "FCM device registration token for push notifications" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "JWT issued successfully with user profile and role" },
+          "401": { "description": "Invalid or expired Firebase ID token" }
+        }
+      }
+    },
+    "/auth/fcm-token": {
+      "post": {
+        "summary": "Register or refresh device FCM token for push notifications",
+        "tags": ["Auth"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fcmToken"],
+                "properties": {
+                  "fcmToken": { "type": "string", "example": "cXYZ123...fcm" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "FCM token registered successfully" }
+        }
+      }
+    },
+    "/kyc/status": {
+      "get": {
+        "summary": "Get Couple Host KYC Status (DPDP Compliant)",
+        "tags": ["KYC"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "KYC status, masked PAN, and publish eligibility" }
+        }
+      }
+    },
+    "/kyc/consent": {
+      "post": {
+        "summary": "Record DPDP Act 2023 Consent",
+        "tags": ["KYC"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["acceptedTerms"],
+                "properties": {
+                  "consentVersion": { "type": "string", "default": "v1.0" },
+                  "acceptedTerms": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Consent recorded and audit logged" }
+        }
+      }
+    },
+    "/kyc/verify-pan": {
+      "post": {
+        "summary": "Verify PAN Card (Mandatory to publish wedding & withdraw funds)",
+        "tags": ["KYC"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["panNumber", "fullName"],
+                "properties": {
+                  "panNumber": { "type": "string", "example": "ABCDE1234F" },
+                  "fullName": { "type": "string", "example": "Aisha Sharma" },
+                  "dob": { "type": "string", "example": "1996-08-14" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "PAN verified and wedding published" }
+        }
+      }
+    },
+    "/kyc/verify-aadhaar": {
+      "post": {
+        "summary": "Aadhaar eKYC via DigiLocker / OTP (Masked & UIDAI Compliant)",
+        "tags": ["KYC"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["aadhaarNumber"],
+                "properties": {
+                  "aadhaarNumber": { "type": "string", "example": "123456789012" },
+                  "otp": { "type": "string", "example": "123456" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Aadhaar verified; raw number not stored" }
+        }
+      }
+    },
+    "/kyc/delete-my-data": {
+      "post": {
+        "summary": "DPDP Right to Erasure (Purge Host KYC Data)",
+        "tags": ["KYC"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Personal data anonymized and purged" }
+        }
+      }
+    },
+    "/weddings/public/{slug}": {
+      "get": {
+        "summary": "Get Public Wedding Wishlist (Gated by Host KYC)",
+        "tags": ["Weddings"],
+        "parameters": [
+          { "name": "slug", "in": "path", "required": true, "schema": { "type": "string", "example": "aisha-kabir" } }
+        ],
+        "responses": {
+          "200": { "description": "Public wishlist, progress bars & guest blessings" },
+          "403": { "description": "Forbidden: Wedding is in draft awaiting host KYC verification" }
+        }
+      }
+    },
+    "/weddings/report/{slug}": {
+      "post": {
+        "summary": "Report Suspicious or Fake Wedding (Anti-Fraud)",
+        "tags": ["Weddings"],
+        "parameters": [
+          { "name": "slug", "in": "path", "required": true, "schema": { "type": "string", "example": "aisha-kabir" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reason"],
+                "properties": {
+                  "reason": { "type": "string", "example": "Impersonation / fake wedding" },
+                  "reporterName": { "type": "string" },
+                  "details": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Report received and queued for review" }
+        }
+      }
+    },
+    "/payments/create-order": {
+      "post": {
+        "summary": "Create Razorpay Contribution Order",
+        "tags": ["Payments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["weddingId", "amount", "guestName"],
+                "properties": {
+                  "weddingId": { "type": "string" },
+                  "itemId": { "type": "string" },
+                  "amount": { "type": "number", "example": 2000 },
+                  "guestName": { "type": "string", "example": "Rahul & Priya" },
+                  "message": { "type": "string", "example": "Skip the gifts. Fund the dream!" },
+                  "isAnonymous": { "type": "boolean", "default": false }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Order details with orderId and keyId" },
+          "403": { "description": "Forbidden: Wedding host is not KYC verified" }
+        }
+      }
+    },
+    "/payments/verify": {
+      "post": {
+        "summary": "Verify Client Checkout Signature",
+        "tags": ["Payments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["orderId", "paymentId", "signature"],
+                "properties": {
+                  "orderId": { "type": "string" },
+                  "paymentId": { "type": "string" },
+                  "signature": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Payment confirmed and progress updated" }
+        }
+      }
+    },
+    "/payments/webhook": {
+      "post": {
+        "summary": "Razorpay Server-to-Server Webhook Handler (Idempotent)",
+        "tags": ["Payments"],
+        "responses": {
+          "200": { "description": "Webhook processed idempotently" }
+        }
+      }
+    },
+    "/payouts/bank-details": {
+      "post": {
+        "summary": "Link Bank Account with Penny-Drop Name Match Verification",
+        "tags": ["Payouts"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["accountHolderName", "accountNumber", "ifscCode"],
+                "properties": {
+                  "accountHolderName": { "type": "string", "example": "Aisha Sharma" },
+                  "accountNumber": { "type": "string", "example": "123456789012" },
+                  "ifscCode": { "type": "string", "example": "HDFC0001234" },
+                  "upiId": { "type": "string", "example": "aisha@okaxis" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Penny-drop verified and bank linked" }
+        }
+      }
+    },
+    "/payouts/request": {
+      "post": {
+        "summary": "Request Fund Settlement to Bank (KYC Enforced)",
+        "tags": ["Payouts"],
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount"],
+                "properties": {
+                  "amount": { "type": "number", "example": 25000 },
+                  "notes": { "type": "string" },
+                  "payoutOtp": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Payout initiated" }
+        }
+      }
+    },
+    "/rooms/templates": {
+      "get": {
+        "summary": "Get all 11 Indian occasion templates with pre-filled goals and privacy defaults",
+        "tags": ["Rooms"],
+        "responses": {
+          "200": { "description": "Templates list returned" }
+        }
+      }
+    },
+    "/rooms": {
+      "post": {
+        "summary": "Create an Event Room (Generates unguessable slug, room code, QR code & seeds wishlist)",
+        "tags": ["Rooms"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["honoreeName"],
+                "properties": {
+                  "eventType": { "type": "string", "example": "ear_piercing" },
+                  "title": { "type": "string", "example": "Priya's Karnavedha Ceremony" },
+                  "honoreeName": { "type": "string", "example": "Priya" },
+                  "date": { "type": "string", "format": "date-time" },
+                  "venue": { "type": "string", "example": "Sri Meenakshi Temple Mandapam" },
+                  "city": { "type": "string", "example": "Bengaluru" },
+                  "privacy": { "type": "string", "enum": ["public", "private"], "example": "private" },
+                  "isWishlistEnabled": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Room created with QR and join links" }
+        }
+      }
+    },
+    "/rooms/{slugOrCode}": {
+      "get": {
+        "summary": "Get Room details by slug or short room code (Privacy protected for unapproved guests)",
+        "tags": ["Rooms"],
+        "parameters": [
+          { "name": "slugOrCode", "in": "path", "required": true, "schema": { "type": "string" }, "example": "PRIYA4821" }
+        ],
+        "responses": {
+          "200": { "description": "Room details returned" },
+          "404": { "description": "Room not found" }
+        }
+      }
+    },
+    "/rooms/{id}/join": {
+      "post": {
+        "summary": "Join a room (Auto-approved for public rooms; Pending queue for private rooms)",
+        "tags": ["Rooms"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["displayName"],
+                "properties": {
+                  "displayName": { "type": "string", "example": "Kavita Aunty" },
+                  "phone": { "type": "string" },
+                  "email": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Join request processed" }
+        }
+      }
+    },
+    "/rooms/{id}/rsvp": {
+      "post": {
+        "summary": "Submit RSVP (Attending, Not Attending, Maybe) with guest count",
+        "tags": ["Rooms"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rsvpStatus"],
+                "properties": {
+                  "rsvpStatus": { "type": "string", "enum": ["attending", "not_attending", "maybe"] },
+                  "guestCount": { "type": "number", "example": 2 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "RSVP recorded and live tally returned" }
+        }
+      }
+    },
+    "/rooms/{id}/posts": {
+      "get": {
+        "summary": "Get room posts (Blessings, photo album, host announcements)",
+        "tags": ["Rooms"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "type", "in": "query", "schema": { "type": "string", "enum": ["blessing", "photo", "announcement"] } }
+        ],
+        "responses": {
+          "200": { "description": "Posts returned" }
+        }
+      },
+      "post": {
+        "summary": "Create a blessing note, upload photo, or publish host announcement",
+        "tags": ["Rooms"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type", "content"],
+                "properties": {
+                  "type": { "type": "string", "enum": ["blessing", "photo", "announcement"] },
+                  "content": { "type": "string" },
+                  "mediaUrl": { "type": "string" },
+                  "authorName": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Post created" },
+          "403": { "description": "Only host can post announcements" }
+        }
+      }
+    },
+    "/rooms/{id}/regenerate-qr": {
+      "post": {
+        "summary": "Revoke old link & code and regenerate new random QR and room code",
+        "tags": ["Rooms"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "New QR, slug, and room code generated" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "info": {
+    "name": "Giftyy API Collection",
+    "description": "Skip the gifts. Fund the dream – Production API for Giftyy Wedding Contribution App with Identity Verification (KYC)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/health"
+      }
+    },
+    {
+      "name": "2. Send Phone OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"9876543210\"\n}"
+        },
+        "url": "http://localhost:5000/api/auth/send-otp"
+      }
+    },
+    {
+      "name": "3. Verify OTP & Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"9876543210\",\n  \"otp\": \"123456\",\n  \"name\": \"Aisha Sharma\"\n}"
+        },
+        "url": "http://localhost:5000/api/auth/verify-otp"
+      }
+    },
+    {
+      "name": "4. Get KYC Verification Status",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{TOKEN}}" }],
+        "url": "http://localhost:5000/api/kyc/status"
+      }
+    },
+    {
+      "name": "5. Verify PAN Card (Host KYC)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"panNumber\": \"ABCDE1234F\",\n  \"fullName\": \"Aisha Sharma\",\n  \"dob\": \"1996-08-14\"\n}"
+        },
+        "url": "http://localhost:5000/api/kyc/verify-pan"
+      }
+    },
+    {
+      "name": "6. Public Guest Wishlist (/w/aisha-kabir)",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/weddings/public/aisha-kabir"
+      }
+    },
+    {
+      "name": "7. Report Suspicious Wedding (Anti-Fraud)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"Suspicious duplicate page\",\n  \"reporterName\": \"Vigilant Guest\"\n}"
+        },
+        "url": "http://localhost:5000/api/weddings/report/aisha-kabir"
+      }
+    },
+    {
+      "name": "8. Create Razorpay Contribution Order",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"weddingId\": \"{{WEDDING_ID}}\",\n  \"amount\": 2000,\n  \"guestName\": \"Rahul & Priya\",\n  \"message\": \"Skip the gifts. Fund the dream! ❤️\",\n  \"isAnonymous\": false\n}"
+        },
+        "url": "http://localhost:5000/api/payments/create-order"
+      }
+    },
+    {
+      "name": "9. Verify Payment Signature",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderId\": \"order_mock_123\",\n  \"paymentId\": \"pay_mock_123\",\n  \"signature\": \"verified\"\n}"
+        },
+        "url": "http://localhost:5000/api/payments/verify"
+      }
+    },
+    {
+      "name": "10. Link Bank Account (Penny-Drop Match)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountHolderName\": \"Aisha Sharma\",\n  \"accountNumber\": \"123456789012\",\n  \"ifscCode\": \"HDFC0001234\",\n  \"upiId\": \"aisha@okaxis\"\n}"
+        },
+        "url": "http://localhost:5000/api/payouts/bank-details"
+      }
+    }
+  ]
+}
